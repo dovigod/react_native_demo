@@ -9,10 +9,15 @@ import Weather from './Weather';
 const API_KEY = 'b8073670c0f44fc3a0db2f8529e82757';
 const getWeather = async (latitude, longitude) => {
 	const { data } = await axios.get(
-		`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}`
+		`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric`
 	);
 
-	return data.main.temp;
+	console.log(data);
+	return {
+		temp: data.main.temp,
+		weather: data.weather,
+		condition: data.weather[0].main
+	};
 };
 
 export default function App() {
@@ -37,7 +42,15 @@ export default function App() {
 				// });
 
 				await getWeather(latitude, longitude).then((res) =>
-					setState({ altitude, latitude, longitude, isLoading: false, temp: res })
+					setState({
+						altitude,
+						latitude,
+						longitude,
+						isLoading: false,
+						temp: res.temp,
+						weather: res.weather,
+						condition: res.condition
+					})
 				);
 			} catch (e) {
 				Alert.alert('Error on either Authentication or location finding..');
@@ -46,12 +59,16 @@ export default function App() {
 
 		useEffect(() => {
 			getLocation();
-		}, []);
+		}, [null]);
 	};
 
 	const mt = useMounting();
 
-	return state.isLoading ? <Load /> : <Weather temprature={Math.round(state.temp)} />;
+	return state.isLoading ? (
+		<Load />
+	) : (
+		<Weather temprature={Math.round(Math.round(state.temp))} condition={state.condition} />
+	);
 }
 
 const styles = StyleSheet.create({});
